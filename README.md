@@ -1,6 +1,6 @@
 # Update internal struct for helm to update apiVersion
 
-In kubernetes v1.16 some apiVersions (https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.16.md#deprecations-and-removals)[has been removed].
+In kubernetes v1.16 some apiVersions [https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.16.md#deprecations-and-removals](has been removed).
 
 For example, Deployments and Daemonsets now must be created with `apps/v1`, not `extensions/v1beta1`.
 
