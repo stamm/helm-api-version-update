@@ -9,10 +9,16 @@ If you just update apiVersion in your template, helm see the version you applied
 So, this tool try to update apiVersion inside internal structs for helm.
 
 For helm2 - it's grpc inside gzip inside base64 inside config map.
+
 For helm3 - it's gzip inside base64 inside secret.
 
 
+Example
+
+```
 go run ./cmd -dry-run -helm2 -ns=test-ns
+```
+
 
 
 flags:
