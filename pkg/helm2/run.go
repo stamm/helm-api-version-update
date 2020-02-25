@@ -17,11 +17,9 @@ import (
 )
 
 // Run convert api version
-func Run(ctx context.Context, clientset *kubernetes.Clientset, namespaces []string, cfg cfg.Config) error {
+func Run(ctx context.Context, clientset *kubernetes.Clientset, namespaces []string, conf cfg.Config) error {
 	configMaps, err := clientset.CoreV1().ConfigMaps("kube-system").
 		List(metav1.ListOptions{LabelSelector: "OWNER=TILLER,STATUS=DEPLOYED"})
-	// configMaps, err := clientset.CoreV1().ConfigMaps("kube-system").
-	//	List(metav1.ListOptions{LabelSelector: "OWNER=TILLER"})
 	if err != nil {
 		return fmt.Errorf("can't get configmaps: %w", err)
 	}
@@ -29,7 +27,7 @@ func Run(ctx context.Context, clientset *kubernetes.Clientset, namespaces []stri
 	log.Printf("len(configMaps) = %+v\n", len(configMaps.Items))
 
 	for _, configMap := range configMaps.Items {
-		if cfg.Filter != "" && !strings.Contains(configMap.Name, cfg.Filter) {
+		if conf.Filter != "" && !strings.Contains(configMap.Name, conf.Filter) {
 			continue
 		}
 
@@ -43,7 +41,7 @@ func Run(ctx context.Context, clientset *kubernetes.Clientset, namespaces []stri
 			continue
 		}
 
-		if cfg.OnlyFind {
+		if conf.OnlyFind {
 			rules, err := common.ContainsRulesConfigMap(configMap)
 			if err != nil {
 				log.Printf("error on ContainsRules %s: %s", configMap.Name, err)
@@ -67,7 +65,7 @@ func Run(ctx context.Context, clientset *kubernetes.Clientset, namespaces []stri
 			return fmt.Errorf("can't decode %s: %w", configMap.Name, err)
 		}
 
-		if cfg.DryRun {
+		if conf.DryRun {
 			log.Printf("skip dry-run update configMap %s\n", newConfigMap.Name)
 
 			continue
@@ -86,7 +84,6 @@ func Run(ctx context.Context, clientset *kubernetes.Clientset, namespaces []stri
 
 // ConvertConfigMap secret
 func ConvertConfigMap(configMap corev1.ConfigMap, rls rspb.Release) (corev1.ConfigMap, error) {
-	// fmt.Printf("configMap.Data = %+v\n", configMap.Data["release"])
 	isChanged := false
 
 	for from, to := range common.GetRules() {
@@ -94,7 +91,6 @@ func ConvertConfigMap(configMap corev1.ConfigMap, rls rspb.Release) (corev1.Conf
 		ok2 := false
 
 		for _, tmpl := range rls.Chart.Templates {
-			// fmt.Printf("string(tmpl.Data) = %s\n", string(tmpl.Data))
 			if strings.Contains(string(tmpl.Data), from) {
 				ok2 = true
 				break
@@ -136,9 +132,8 @@ func ConvertConfigMap(configMap corev1.ConfigMap, rls rspb.Release) (corev1.Conf
 func getHelmRelease(configMap corev1.ConfigMap) (rspb.Release, error) {
 	data, ok := configMap.Data["release"]
 	if !ok {
-		return rspb.Release{}, fmt.Errorf("ConfigMap %s: %w", configMap.Name, common.ErrNotRelease)
+		return rspb.Release{}, fmt.Errorf("configMap %s: %w", configMap.Name, common.ErrNotRelease)
 	}
-	// fmt.Printf("string(data) = %+v\n", string(data))
 	decoded, err := common.Decode(data)
 	if err != nil {
 		return rspb.Release{}, fmt.Errorf("can't decode ConfigMap %s: %w", configMap.Name, err)
