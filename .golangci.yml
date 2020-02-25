@@ -84,7 +84,7 @@ linters:
     - lll
     - misspell
     - nakedret
-    - rowserrcheck
+    # - rowserrcheck
     - scopelint
     - staticcheck
     - structcheck
