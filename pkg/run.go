@@ -61,8 +61,8 @@ func getNamespaces(cl kubernetes.Interface, cfgNamespaces string) ([]string, err
 
 	nss := make([]string, 0, len(namespaces.Items))
 
-	for _, namespace := range namespaces.Items {
-		nss = append(nss, namespace.Name)
+	for i := range namespaces.Items {
+		nss = append(nss, namespaces.Items[i].Name)
 	}
 
 	return nss, nil

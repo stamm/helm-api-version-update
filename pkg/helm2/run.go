@@ -27,64 +27,72 @@ func Run(ctx context.Context, clientset *kubernetes.Clientset, namespaces []stri
 
 	log.Printf("len(configMaps) = %+v\n", len(configMaps.Items))
 
-	for _, configMap := range configMaps.Items {
-		if conf.Filter != "" && !strings.Contains(configMap.Name, conf.Filter) {
-			continue
+	for i := range configMaps.Items {
+		if err := processCM(&configMaps.Items[i], clientset, namespaces, conf); err != nil {
+			return err
 		}
-
-		rls, err := getHelmRelease(configMap)
-		if err != nil {
-			log.Printf("configMap error getting release%s: %s", configMap.Name, common.ErrNotRelease)
-			continue
-		}
-
-		if len(namespaces) > 1 && skip(rls, namespaces) {
-			continue
-		}
-
-		if conf.OnlyFind {
-			rules, err := common.ContainsRulesConfigMap(configMap)
-			if err != nil {
-				log.Printf("error on ContainsRules %s: %s", configMap.Name, err)
-			}
-
-			if len(rules) > 0 {
-				log.Printf("%s have rules: %+v", configMap.Name, rules)
-			}
-
-			continue
-		}
-
-		newConfigMap, err := ConvertConfigMap(configMap, rls)
-		if err != nil {
-			if errors.Is(err, common.ErrNotRelease) || errors.Is(err, common.ErrNothingUpdate) {
-				log.Printf("skip: %s", err)
-
-				continue
-			}
-
-			return fmt.Errorf("can't decode %s: %w", configMap.Name, err)
-		}
-
-		if conf.DryRun {
-			log.Printf("skip dry-run update configMap %s\n", newConfigMap.Name)
-
-			continue
-		}
-
-		_, err = clientset.CoreV1().ConfigMaps("kube-system").Update(&newConfigMap)
-		if err != nil {
-			return fmt.Errorf("can't update configMap %s: %w", configMap.Name, err)
-		}
-
-		log.Printf("updated configMap %s\n", newConfigMap.Name)
 	}
 
 	return nil
 }
 
+func processCM(configMap *corev1.ConfigMap, clientset *kubernetes.Clientset, namespaces []string, conf cfg.Config) error {
+	if conf.Filter != "" && !strings.Contains(configMap.Name, conf.Filter) {
+		return nil
+	}
+
+	rls, err := getHelmRelease(configMap)
+	if err != nil {
+		log.Printf("configMap error getting release%s: %s", configMap.Name, common.ErrNotRelease)
+		return nil
+	}
+
+	if len(namespaces) > 1 && skip(&rls, namespaces) {
+		return nil
+	}
+
+	if conf.OnlyFind {
+		rules, errRules := common.ContainsRulesConfigMap(configMap)
+		if errRules != nil {
+			log.Printf("error on ContainsRules %s: %s", configMap.Name, errRules)
+			return nil
+		}
+
+		if len(rules) > 0 {
+			log.Printf("%s have rules: %+v", configMap.Name, rules)
+		}
+
+		return nil
+	}
+
+	newConfigMap, err := ConvertConfigMap(configMap, &rls)
+	if err != nil {
+		if errors.Is(err, common.ErrNotRelease) || errors.Is(err, common.ErrNothingUpdate) {
+			log.Printf("skip: %s", err)
+
+			return nil
+		}
+
+		return fmt.Errorf("can't decode %s: %w", configMap.Name, err)
+	}
+
+	if conf.DryRun {
+		log.Printf("skip dry-run update configMap %s\n", newConfigMap.Name)
+
+		return nil
+	}
+
+	_, err = clientset.CoreV1().ConfigMaps("kube-system").Update(&newConfigMap)
+	if err != nil {
+		return fmt.Errorf("can't update configMap %s: %w", configMap.Name, err)
+	}
+
+	log.Printf("updated configMap %s\n", newConfigMap.Name)
+	return nil
+}
+
 // ConvertConfigMap secret
-func ConvertConfigMap(configMap corev1.ConfigMap, rls rspb.Release) (corev1.ConfigMap, error) {
+func ConvertConfigMap(configMap *corev1.ConfigMap, rls *rspb.Release) (corev1.ConfigMap, error) {
 	isChanged := false
 
 	for from, to := range common.GetRules() {
@@ -109,7 +117,7 @@ func ConvertConfigMap(configMap corev1.ConfigMap, rls rspb.Release) (corev1.Conf
 			rls.Chart.Templates[i].Data = []byte(strings.Replace(string(tmpl.Data), from, to, -1))
 		}
 
-		b, err := proto.Marshal(&rls)
+		b, err := proto.Marshal(rls)
 		if err != nil {
 			return corev1.ConfigMap{}, err
 		}
@@ -127,10 +135,10 @@ func ConvertConfigMap(configMap corev1.ConfigMap, rls rspb.Release) (corev1.Conf
 		return corev1.ConfigMap{}, fmt.Errorf("configMap %s: %w", configMap.Name, common.ErrNothingUpdate)
 	}
 
-	return configMap, nil
+	return *configMap, nil
 }
 
-func getHelmRelease(configMap corev1.ConfigMap) (rspb.Release, error) {
+func getHelmRelease(configMap *corev1.ConfigMap) (rspb.Release, error) {
 	data, ok := configMap.Data["release"]
 	if !ok {
 		return rspb.Release{}, fmt.Errorf("configMap %s: %w", configMap.Name, common.ErrNotRelease)
@@ -150,7 +158,7 @@ func getHelmRelease(configMap corev1.ConfigMap) (rspb.Release, error) {
 	return rls, nil
 }
 
-func skip(rls rspb.Release, namespaces []string) bool {
+func skip(rls *rspb.Release, namespaces []string) bool {
 	for _, ns := range namespaces {
 		if rls.Namespace == ns {
 			return false

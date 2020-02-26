@@ -27,13 +27,14 @@ func Run(ctx context.Context, clientset *kubernetes.Clientset, namespaces []stri
 
 		log.Printf("ns: %s, len(list) = %+v\n", ns, len(list.Items))
 
-		for _, secret := range list.Items {
+		for i := range list.Items {
+			secret := list.Items[i]
 			if conf.Filter != "" && !strings.Contains(secret.Name, conf.Filter) {
 				continue
 			}
 
 			if conf.OnlyFind {
-				rules, err := common.ContainsRulesSecret(secret)
+				rules, err := common.ContainsRulesSecret(&secret)
 				if err != nil {
 					log.Printf("error on ContainsRuls %s.%s: %s", secret.Name, secret.Namespace, err)
 				}
@@ -45,7 +46,7 @@ func Run(ctx context.Context, clientset *kubernetes.Clientset, namespaces []stri
 				continue
 			}
 
-			newSecret, err := common.ConvertSecret(secret)
+			newSecret, err := common.ConvertSecret(&secret)
 			if err != nil {
 				if errors.Is(err, common.ErrNotRelease) || errors.Is(err, common.ErrNothingUpdate) {
 					log.Printf("skip: %s", err)

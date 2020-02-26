@@ -15,7 +15,7 @@ var ErrNotRelease = errors.New("don't have data.release")
 var ErrNothingUpdate = errors.New("don't have old apiVersion")
 
 // ConvertSecret secret
-func ConvertSecret(secret corev1.Secret) (corev1.Secret, error) {
+func ConvertSecret(secret *corev1.Secret) (corev1.Secret, error) {
 	data, ok := secret.Data["release"]
 	if !ok {
 		return corev1.Secret{}, fmt.Errorf("secret %s.%s: %w", secret.Name, secret.Namespace, ErrNotRelease)
@@ -49,16 +49,16 @@ func ConvertSecret(secret corev1.Secret) (corev1.Secret, error) {
 		return corev1.Secret{}, fmt.Errorf("secret %s.%s: %w", secret.Name, secret.Namespace, ErrNotRelease)
 	}
 
-	return secret, nil
+	return *secret, nil
 }
 
 // ContainsRulesSecret secret
-func ContainsRulesSecret(secret corev1.Secret) ([]string, error) {
+func ContainsRulesSecret(secret *corev1.Secret) ([]string, error) {
 	return containsRules(secret.Name, secret.Namespace, string(secret.Data["release"]))
 }
 
 // ContainsRulesConfigMap secret
-func ContainsRulesConfigMap(configMap corev1.ConfigMap) ([]string, error) {
+func ContainsRulesConfigMap(configMap *corev1.ConfigMap) ([]string, error) {
 	return containsRules(configMap.Name, configMap.Namespace, configMap.Data["release"])
 }
 
