@@ -75,7 +75,7 @@ linters:
     - goimports
     - golint
     - gomnd
-    # - goprintffuncname
+    - goprintffuncname
     - gosec
     - gosimple
     - govet
@@ -84,7 +84,7 @@ linters:
     - lll
     - misspell
     - nakedret
-    # - rowserrcheck
+    - rowserrcheck
     - scopelint
     - staticcheck
     - structcheck
