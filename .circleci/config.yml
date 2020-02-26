@@ -8,7 +8,6 @@ jobs:
   build:
     docker:
       - image: golang:1.14-alpine
-    working_directory: /go/src/helm-api-version-update
     steps:
       - checkout
       - run: go build ./cmd/
@@ -18,7 +17,6 @@ jobs:
   lint:
     docker:
       - image: golangci/golangci-lint:v1.23-alpine
-    working_directory: /go/src/helm-api-version-update
     steps:
       - checkout
       - run: go mod download
