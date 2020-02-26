@@ -32,7 +32,7 @@ func main() {
 
 	ctx := context.Background()
 
-	cfg := cfg.Config{
+	conf := cfg.Config{
 		KubeCfg:  *kubeconfig,
 		OnlyFind: *onlyFind,
 		Ns:       *ns,
@@ -42,14 +42,14 @@ func main() {
 		Filter:   *filter,
 	}
 
-	if err := cfg.Validate(); err != nil {
+	if err := conf.Validate(); err != nil {
 		log.Println(err)
 		os.Exit(exitCode)
 	}
 
-	log.Printf("cfg = %+v\n", cfg)
+	log.Printf("conf = %+v\n", conf)
 
-	if err := pkg.Run(ctx, cfg); err != nil {
+	if err := pkg.Run(ctx, conf); err != nil {
 		panic(err)
 	}
 }

@@ -18,10 +18,10 @@ import (
 )
 
 // Run convert api version
-func Run(ctx context.Context, cfg cfg.Config) error {
-	config, err := clientcmd.BuildConfigFromFlags("", cfg.KubeCfg)
+func Run(ctx context.Context, conf cfg.Config) error {
+	config, err := clientcmd.BuildConfigFromFlags("", conf.KubeCfg)
 	if err != nil {
-		return fmt.Errorf("can't build config from file (%s): %w", cfg.KubeCfg, err)
+		return fmt.Errorf("can't build config from file (%s): %w", conf.KubeCfg, err)
 	}
 
 	// create the clientset
@@ -30,19 +30,19 @@ func Run(ctx context.Context, cfg cfg.Config) error {
 		return fmt.Errorf("can't build client: %w", err)
 	}
 
-	namespaces, err := getNamespaces(clientset, cfg.Ns)
+	namespaces, err := getNamespaces(clientset, conf.Ns)
 	if err != nil {
 		return fmt.Errorf("can't get namespaces: %w", err)
 	}
 
 	log.Printf("namespaces = %+v\n", namespaces)
 
-	if cfg.Helm2 {
-		return helm2.Run(ctx, clientset, namespaces, cfg)
+	if conf.Helm2 {
+		return helm2.Run(ctx, clientset, namespaces, conf)
 	}
 
-	if cfg.Helm3 {
-		return helm3.Run(ctx, clientset, namespaces, cfg)
+	if conf.Helm3 {
+		return helm3.Run(ctx, clientset, namespaces, conf)
 	}
 
 	return nil

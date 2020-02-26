@@ -20,7 +20,6 @@ func ConvertSecret(secret corev1.Secret) (corev1.Secret, error) {
 	if !ok {
 		return corev1.Secret{}, fmt.Errorf("secret %s.%s: %w", secret.Name, secret.Namespace, ErrNotRelease)
 	}
-	// fmt.Printf("string(data) = %+v\n", string(data))
 	decoded, err := Decode(string(data))
 	if err != nil {
 		return corev1.Secret{}, fmt.Errorf("can't decode %s %s: %w", secret.Namespace, secret.Name, err)
@@ -63,16 +62,14 @@ func ContainsRulesConfigMap(configMap corev1.ConfigMap) ([]string, error) {
 	return containsRules(configMap.Name, configMap.Namespace, configMap.Data["release"])
 }
 
-func containsRules(name, ns string, data string) ([]string, error) {
+func containsRules(name, ns, data string) ([]string, error) {
 	if data == "" {
 		return []string{}, fmt.Errorf("dont have release in data %s.%s: %w", name, ns, ErrNotRelease)
 	}
-	// fmt.Printf("string(data) = %+v\n", string(data))
 	decoded, err := Decode(data)
 	if err != nil {
 		return []string{}, fmt.Errorf("can't decode %s %s: %w", ns, name, err)
 	}
-	// fmt.Printf("decoded = %s\n", decoded)
 
 	result := make([]string, 0)
 

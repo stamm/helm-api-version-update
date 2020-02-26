@@ -1,0 +1,48 @@
+---
+version: 2.1
+
+jobs:
+  # This build job just tests that the binary can build. If your project is a
+  # library, not a binary, you don't need this build job. In other words, omit
+  # this job if you don't have a func main() in your project.
+  build:
+    docker:
+      - image: golang:1.13-alpine
+    environment:
+      # These env vars should become unnecessary in Go 1.14.
+      GO111MODULE: 'on' # This string should be quoted because `on` is a bool in YAML. We want a string.
+      GOFLAGS: -mod=vendor
+    working_directory: /go/src/helm-api-version-update
+    steps:
+      - checkout
+      - go build ./cmd/
+
+  # golangci-lint runs dozens of linters in parallel on your project. It is the
+  # best Go linter.
+  lint:
+    docker:
+      - image: golangci/golangci-lint:v1.23-alpine
+    steps:
+      - checkout
+      - run: golangci-lint run
+  # test:
+  #   docker:
+  #     # We use golang:1.13 instead of golang:1.13-alpine because we want to run
+  #     # tests with the race detector enabled. The race detector requires glibc.
+  #     # Debian-based containers like golang:1.13 use glibc. Alpine-based
+  #     # containers use musl.
+  #     - image: golang:1.13
+  #   environment:
+  #     GO111MODULE: 'on'
+  #     GOFLAGS: -mod=vendor
+  #   working_directory: /go/src/helm-api-version-update
+  #   steps:
+  #     - checkout
+  #     - run: go test -v -race ./...
+
+workflows:
+  build_lint_test:
+    jobs:
+      - build
+      - lint
+      # - test

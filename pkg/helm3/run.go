@@ -17,7 +17,7 @@ import (
 )
 
 // Run convert api version
-func Run(ctx context.Context, clientset *kubernetes.Clientset, namespaces []string, cfg cfg.Config) error {
+func Run(ctx context.Context, clientset *kubernetes.Clientset, namespaces []string, conf cfg.Config) error {
 	for _, ns := range namespaces {
 		list, err := clientset.CoreV1().Secrets(ns).List(metav1.ListOptions{LabelSelector: "owner=helm,status=deployed"})
 		if err != nil {
@@ -27,11 +27,11 @@ func Run(ctx context.Context, clientset *kubernetes.Clientset, namespaces []stri
 		log.Printf("ns: %s, len(list) = %+v\n", ns, len(list.Items))
 
 		for _, secret := range list.Items {
-			if cfg.Filter != "" && !strings.Contains(secret.Name, cfg.Filter) {
+			if conf.Filter != "" && !strings.Contains(secret.Name, conf.Filter) {
 				continue
 			}
 
-			if cfg.OnlyFind {
+			if conf.OnlyFind {
 				rules, err := common.ContainsRulesSecret(secret)
 				if err != nil {
 					log.Printf("error on ContainsRuls %s.%s: %s", secret.Name, secret.Namespace, err)
@@ -54,7 +54,7 @@ func Run(ctx context.Context, clientset *kubernetes.Clientset, namespaces []stri
 				return fmt.Errorf("can't decode %s %s: %w", ns, secret.Name, err)
 			}
 
-			if cfg.DryRun {
+			if conf.DryRun {
 				log.Printf("skip dry-run update secret %s\n", secret.Name)
 				continue
 			}
