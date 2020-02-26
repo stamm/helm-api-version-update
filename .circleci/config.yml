@@ -7,11 +7,7 @@ jobs:
   # this job if you don't have a func main() in your project.
   build:
     docker:
-      - image: golang:1.13-alpine
-    environment:
-      # These env vars should become unnecessary in Go 1.14.
-      GO111MODULE: 'on' # This string should be quoted because `on` is a bool in YAML. We want a string.
-      GOFLAGS: -mod=vendor
+      - image: golang:1.14-alpine
     working_directory: /go/src/helm-api-version-update
     steps:
       - checkout
@@ -24,6 +20,7 @@ jobs:
       - image: golangci/golangci-lint:v1.23-alpine
     steps:
       - checkout
+      - run: go mod download
       - run: golangci-lint run
   # test:
   #   docker:
