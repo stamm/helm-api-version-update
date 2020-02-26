@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"helm-api-version-update/pkg/cfg"
-	"helm-api-version-update/pkg/common"
 	"log"
 	"strings"
+
+	"github.com/stamm/helm-api-version-update/pkg/cfg"
+	"github.com/stamm/helm-api-version-update/pkg/common"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"

@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"helm-api-version-update/pkg/cfg"
-	"helm-api-version-update/pkg/common"
 	"log"
 	"strings"
+
+	"github.com/stamm/helm-api-version-update/pkg/cfg"
+	"github.com/stamm/helm-api-version-update/pkg/common"
 
 	"github.com/golang/protobuf/proto"
 	corev1 "k8s.io/api/core/v1"

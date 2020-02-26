@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"flag"
-	"helm-api-version-update/pkg"
-	"helm-api-version-update/pkg/cfg"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/stamm/helm-api-version-update/pkg"
+	"github.com/stamm/helm-api-version-update/pkg/cfg"
 )
 
 const exitCode = 1

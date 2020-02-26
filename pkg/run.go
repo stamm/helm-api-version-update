@@ -3,11 +3,12 @@ package pkg
 import (
 	"context"
 	"fmt"
-	"helm-api-version-update/pkg/cfg"
-	"helm-api-version-update/pkg/helm2"
-	"helm-api-version-update/pkg/helm3"
 	"log"
 	"strings"
+
+	"github.com/stamm/helm-api-version-update/pkg/cfg"
+	"github.com/stamm/helm-api-version-update/pkg/helm2"
+	"github.com/stamm/helm-api-version-update/pkg/helm3"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
