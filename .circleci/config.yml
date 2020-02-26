@@ -10,7 +10,7 @@ jobs:
       - image: golang:1.14-alpine
     steps:
       - checkout
-      - run: go build ./cmd/
+      - run: go build -o /dev/null ./cmd/
 
   # golangci-lint runs dozens of linters in parallel on your project. It is the
   # best Go linter.
